@@ -411,3 +411,13 @@ def setupDragger(self):
 > ### 总结
 >
 > `cmds.ls` 是一个非常常用的 Maya 命令，用于获取场景中对象的信息。在您提供的代码中，它用于获取当前选定对象的名称，以便随后进行复制操作。这样可以让用户方便地操作和管理 Maya 场景中的对象。
+
+
+
+
+
+# 三、建模部分
+
+## 1.柱子案例
+
+https://www.youtube.com/watch?v=DFayPxqZMo4

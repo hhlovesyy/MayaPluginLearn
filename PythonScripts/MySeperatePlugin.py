@@ -17,6 +17,7 @@ class UVToolKit():
         cmds.textField("baseObject")
         cmds.button("baseObjectButton", l="选择", c=self.selectBaseObject)
         cmds.setParent("..")
+        # cmds.xxx(cube, e=True, tx="pCube1", ch=False)  # 设置文本框的值
 
         cmds.separator(h=10, st='in')
         cmds.rowColumnLayout(w=380)
@@ -103,9 +104,12 @@ class UVToolKit():
         # 切换到选择工具和移动工具
         Y = [0, 1, 0]
         # 获取当前移动工具的坐标
+        # todo:如果没有移动工具，把移动工具调出来
+
         pos = cmds.manipMoveContext('Move', q=True, p=True)
         # 获取多边形每个顶点的法线
-        nms = cmds.polyNormalPerVertex(q=True, xyz=True)
+        nms = cmds.polyNormalPerVertex(q=True, xyz=True)  # x1,y1,z1,x2,y2,z2...一个顶点可能有多条法线，主要是Cube这种硬的转折面
+        print("nms!!!", nms)
         Z = [0, 0, 0]
         # 将法线值累加到 Z 向量中
         for i in range(0, len(nms), 3):
@@ -264,7 +268,7 @@ class UVToolKit():
         firstCount = len(first)
         group = []
         merge = cmds.floatSliderGrp('MERGE', query=True, value=True)
-        legacy = cmds.checkBoxGrp('LEGACY', query=True, value1=True)
+        legacy = cmds.checkBox('LEGACY', query=True, value=True)
         grpName = cmds.textFieldGrp('GRP_CUT', query=True, text=True)
         selected_objects = cmds.ls(sl=True, l=True, tr=True)
 
@@ -433,16 +437,15 @@ class UVToolKit():
         print(
             f"Result Only: {result_only}, Legacy: {legacy}, Min Scale: {min_scale}, Max Scale: {max_scale}, Min Div: {min_div}, Max Div: {max_div}")
 
-        # 注：明天主要补充这里面的代码
         # 获取当前选中的对象及其完整路径
-        selected = cmds.ls(selection=True, flatten=True, long=True)
+        selected = cmds.ls(selection=True, flatten=True, long=True)  # [A|B]
         size_selected = len(selected) # 获取选中对象的数量
 
         # 获取当前选中的所有对象及其形状
         # flatten=True 意味着返回一个扁平列表，而不是一个嵌套列表,当设置为 True 时，返回的结果将是一个展平的列表。如果你选择了一个层次结构（例如，一个组节点及其子节点），启用 flatten 会将所有选中的子节点合并到同一个列表中，而不是保留层次结构。
-        all_shapes = cmds.ls(selection=True, flatten=True, long=True, objectsOnly=True) # 获取结果例如：['|pCube1|pCubeShape1']
+        all_shapes = cmds.ls(selection=True, flatten=True, long=True, objectsOnly=True) # 获取结果例如：['pCube1|pCube2']
         # 列出所有形状对象的父变换节点,这个函数接口也可以用来获取孩子节点，兄弟节点
-        all_trans = cmds.listRelatives(all_shapes, parent=True, type="transform") if all_shapes else [] # 获取结果例如：['pCube1']
+        all_trans = cmds.listRelatives(all_shapes, parent=True, type="transform") if all_shapes else [] # 获取结果例如：['pCube1'],直接get all_shapes的父节点
         # 使用正则表达式替换匹配到的部分
         if all_trans:
             # 获取第一个变换节点
@@ -458,7 +461,7 @@ class UVToolKit():
 
         # 假设 all_shapes 是已定义的几何体列表
         all_shapes = cmds.ls(selection=True, flatten=True, long=True, objectsOnly=True)
-        print("all_shapes,", all_shapes)  # all_shapes, |pCube2|pCube3 (此时pCube3是pCube2的子节点，并且比如pCube1是隐藏的，就不会显示)
+        print("all_shapes,", all_shapes)  # all_shapes, 如果选择物体的话会输出|pCube2|pCube3 (此时pCube3是pCube2的子节点，并且比如pCube1是隐藏的，就不会显示)，如果选择点则是类似于['|pCube2|pCubeShape2']这样的
 
         all_trans_full = cmds.listRelatives(all_shapes, fullPath=True, parent=True,
                                             type="transform") if all_shapes else []
@@ -468,7 +471,7 @@ class UVToolKit():
         size_sel = 1 if (single_mode > 0) else size_selected
         chunk = []
         self.showMsg(checker, [0.2, 0.2, 0.2])
-        print("selected[0]", selected[0], cmds.nodeType(selected[0]))
+        print("selected[0]", selected[0], cmds.nodeType(selected[0]))  # 如果选择了点，输出|pCube2.vtx[0] mesh
         if checker > 0:
             self.showMsg("选择的物体：" + selected[0], [0.2, 0.2, 0.2])
             selected = cmds.ls(selection=True)  # 获取当前选择的对象
@@ -492,7 +495,7 @@ class UVToolKit():
                 if single_mode > 0:
                     cmds.select(selected)
                 else:
-                    cmds.select(selected[i])
+                    cmds.select(selected[i])  # select, ls
                 trot = self.pl_vector()
 
                 # todo: 暂时先不管plane的情况，就用变形的cube切
